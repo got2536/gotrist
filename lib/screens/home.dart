@@ -2,6 +2,9 @@ import 'dart:convert';
 
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
+import 'package:gotrist/models/user_model.dart';
+import 'package:gotrist/screens/my_alert.dart';
+import 'package:gotrist/screens/my_service.dart';
 import 'package:http/http.dart';
 
 //stl select stateful
@@ -40,11 +43,28 @@ class _HomeState extends State<Home> {
 
   //future
   Future<void> getUserWhereResultCode() async {
-    String urlAPI = 'http://10.28.50.26/getUserWhereResultGot.php/?isAdd=true&ResultCode=$resultCode';
+    String urlAPI =
+        'http://10.28.50.26/getUserWhereResultGot.php/?isAdd=true&ResultCode=$resultCode';
     Response response = await get(urlAPI);
     // print('response = $response');
     var result = json.decode(response.body);
     print('result = $result');
+
+    if (result.toString() == 'null') {
+      normalDialog('Result False', 'No $resultCode in my Database', context);
+    } else {
+      for (var map in result) {
+        UserModel userModel = UserModel.fromJSON(map);
+        MaterialPageRoute materialPageRoute =
+            MaterialPageRoute(builder: (BuildContext context) {
+          return MyService(userModel: userModel,);
+        });
+        Navigator.of(context).pushAndRemoveUntil(materialPageRoute,
+            (Route<dynamic> route) {
+          return false;
+        });
+      }
+    }
   }
 
   Widget showLogo() {
